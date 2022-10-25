@@ -9,7 +9,8 @@ public:
 public:
     Node *root;
     int size;
-
+private:
+    int indexOf(char c, Node* p);
 public:
     ConcatStringTree(const char * s);
     int length() const;

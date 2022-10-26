@@ -5,12 +5,13 @@
 
 class ConcatStringTree {
 public:
-    class Node;
+    class Node; //forward declaration
 public:
     Node *root;
     int size;
 private:
     int indexOf(char c, Node* p);
+    void preoderTravelsal(Node*& p,string &ans) const;
 public:
     ConcatStringTree(const char * s);
     int length() const;
@@ -33,6 +34,7 @@ public:
         Node *left;
         Node *right;
         Node(const char *s);
+        string info() const;
         ~Node();
     };
 };

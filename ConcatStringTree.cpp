@@ -5,6 +5,15 @@ ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),r
     this -> data = new char[length+1];
     for (int i=0;i<=length;i++) this->data[i]=s[i];
 }
+string ConcatStringTree::Node::info() const{
+    stringstream ss;
+    ss<<"(LL="<<this->leftLength<<",L="<<this->length;
+    if (this->data == NULL) ss<<",<NULL>)";
+        else ss<<','<<this->data<<')';
+    string ans;
+    ss>>ans;
+    return ans;
+}
 ConcatStringTree::Node::~Node(){
     if (this->data != NULL) delete[] this->data;
 }
@@ -48,4 +57,29 @@ int ConcatStringTree::indexOf(char c, Node *p){
     }
     int index = indexOf(c,p->left);
     return (index != -1)?index:p->leftLength+indexOf(c,p->right);
+}
+
+string ConcatStringTree::toStringPreOrder() const{
+    string ans="ConcatStringTree[";
+    Node *p = root;
+    preoderTravelsal(p,ans);
+    ans+=']';
+    return ans;
+}
+
+void ConcatStringTree::preoderTravelsal(Node*&p,string &ans) const{
+    if (p==NULL) return;
+    ans += p->info();
+    if (p->left){
+        ans +=';';
+        preoderTravelsal(p->left,ans);
+    }
+    if (p->right){
+        ans+=';';
+        preoderTravelsal(p->right,ans);
+    }
+}
+
+string ConcatStringTree::toString() const{
+    
 }

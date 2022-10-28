@@ -12,7 +12,10 @@ public:
 private:
     int indexOf(char c, Node* p);
     void preoderTravelsal(Node*& p,string &ans) const;
+    void toStringRec(Node *&p, string &ans) const;
+    Node * subStringRecursive(Node * node,int from, int to) const;
 public:
+    ConcatStringTree(Node *root,int size);
     ConcatStringTree(const char * s);
     int length() const;
     char get(int index);
@@ -22,6 +25,7 @@ public:
     ConcatStringTree concat(const ConcatStringTree & otherS) const;
     ConcatStringTree subString(int from, int to) const;
     ConcatStringTree reverse() const;
+    // ~ConcatStringTree();
 
     int getParTreeSize(const string & query) const;
     string getParTreeStringPreOrder(const string & query) const;
@@ -33,6 +37,7 @@ public:
         char *data;
         Node *left;
         Node *right;
+        Node();
         Node(const char *s);
         string info() const;
         ~Node();

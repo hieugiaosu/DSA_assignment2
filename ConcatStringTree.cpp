@@ -1,8 +1,8 @@
 #include "ConcatStringTree.h"
 // class Node
-ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL){}
+ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL),parents(){}
 
-ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),right(NULL){
+ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),right(NULL),parents(){
     for (int i=0;s[i];i++) length++;
     this -> data = new char[length+1];
     for (int i=0;i<=length;i++) this->data[i]=s[i];
@@ -141,4 +141,176 @@ ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int fro
         }
     }
     return temp;
+}
+
+ConcatStringTree ConcatStringTree::reverse() const{
+    Node *p = root;
+    Node *rootNode = reverseRecursive(p);
+    return ConcatStringTree(rootNode,this->size);
+}
+
+ConcatStringTree::Node* ConcatStringTree::reverseRecursive(Node * node) const{
+    if (node == NULL) return NULL;
+    Node * temp = new Node;
+    int len = node ->length;
+    if (node->data != NULL){
+        temp -> length = len;
+        temp -> data = new char[len+1];
+        for (int i=0;node->data[i];i++){
+            temp->data[len-1-i] = node -> data[i];
+        }
+        temp->data[len] = '\0';
+        return temp;
+    }
+    temp ->length = len;
+    if (node -> right == NULL) temp ->leftLength =0;
+        else temp->leftLength = node ->right ->length;
+    temp -> left = reverseRecursive(node -> right);
+    temp -> right = reverseRecursive(node->left);
+    return temp;
+}
+
+int ConcatStringTree::getParTreeSize(const string & query) const{
+    Node *p = root;
+    int n=query.size();
+    for (int i=0;i<n;i++){
+        if (query[i]=='l') p=p->left;
+            else {
+                if (query[i]=='r') p=p->right;
+                    else throw runtime_error("Invalid character of query");
+            }
+        if (p==NULL) throw runtime_error("Invalid query: reaching NULL");
+    }
+    return (p->parents).size();
+}
+
+string ConcatStringTree::getParTreeStringPreOrder(const string & query) const{
+    Node *p = root;
+    int n=query.size();
+    for (int i=0;i<n;i++){
+        if (query[i]=='l') p=p->left;
+            else {
+                if (query[i]=='r') p=p->right;
+                    else throw runtime_error("Invalid character of query");
+            }
+        if (p==NULL) throw runtime_error("Invalid query: reaching NULL");
+    }
+    return (p->parents).toStringPreOrder();
+}
+
+// ParentsTree
+ConcatStringTree::ParentsTree::ParentsTree():root(NULL),maxkey(0),treeSize(0){}
+
+void ConcatStringTree::ParentsTree::addNode(Node* parent){
+    maxkey++;
+    treeSize++;
+    if (maxkey>maxNode) throw overflow_error("Id is overflow!");
+    if (this->root == NULL){
+        root = new TreeNode(maxkey,parent);
+        return;
+    } else {
+        root=addNodeRec(root,parent,maxkey);
+    }
+}
+
+int ConcatStringTree::ParentsTree::size() const{
+    return treeSize;
+}
+
+string ConcatStringTree::ParentsTree::toStringPreOrder() const{
+    if (this->root == NULL) return "ParentsTree[]";
+    string ans="ParentsTree[";
+    stringstream ss;
+    ss<<"(id="<<root->key<<")";
+    string temp = ss.str();
+    ans+=temp;
+    TreeNode *p = root;
+    preOrderTravelsal(p->left,ans);
+    preOrderTravelsal(p->right,ans);
+    ans+="]";
+}
+void ConcatStringTree::ParentsTree::preOrderTravelsal(TreeNode *&p, string&ans) const{
+    if (p==NULL) return;
+    stringstream ss;
+    ss<<";(id="<<p->key<<")";
+    string temp = ss.str();
+    ans+=temp;
+    preOrderTravelsal(p->left,ans);
+    preOrderTravelsal(p->right,ans);
+}
+ConcatStringTree::ParentsTree::TreeNode* ConcatStringTree::ParentsTree::addNodeRec(TreeNode *p, Node * parrent,int key){
+    if (p==NULL) return NULL;
+    if (key < p->key){
+        if (p->left==NULL) {
+            p->left = new TreeNode(key,parrent);
+        } else {
+            p->left = addNodeRec(p->left,parrent,key);
+        }
+    } else {
+        if (p->right==NULL) {
+            p->right = new TreeNode(key,parrent);
+        } else {
+            p->right = addNodeRec(p->right,parrent,key);
+        }
+    }
+    p->updateHeight();
+    return ensureBalance(p);
+}
+
+ConcatStringTree::ParentsTree::TreeNode * ConcatStringTree::ParentsTree::ensureBalance(TreeNode *p){
+    if (p==NULL) return NULL;
+    int leftheight =(p->left==NULL)?0:p->left->height;
+    int rightheight = (p->right == NULL)?0:p->right->height;
+    if (leftheight - rightheight <= 1 && leftheight-rightheight>=-1) return p;
+    if (leftheight - rightheight>1){
+        int LL = (p->left->left==NULL)?0:p->left->left->height; //left of left
+        int LR = (p->left->right==NULL)?0:p->left->right->height; // right of left
+        if (LL>LR) { // case left of left
+            TreeNode *temp = p->left; //rotate right
+            p->left = temp -> right;
+            temp->right = p;
+            p->updateHeight();
+            return temp;
+        } else { // case right of left
+            TreeNode *temp = p->left;  // rotate left
+            p->left = temp->right;
+            temp -> right = p->left->left;
+            p->left ->left = temp;
+            p->left->updateHeight();
+            temp = p->left; // rotate right
+            p->left = temp -> right;
+            temp->right = p;
+            p->updateHeight();
+            return temp;
+        }
+    } else {
+        int RR = (p->right->right==NULL)?0:p->right->right->height; //right of right
+        int RL = (p->right->left==NULL)?0:p->right->left->height; // left of right
+        if (RR>RL){ // case right of right
+            TreeNode *temp = p->right; // rotate left
+            p->right = temp -> left;
+            temp-> left = p;
+            p->updateHeight();
+            return temp;
+        } else { // case left of right
+            TreeNode * temp = p->right; // rotate right
+            p->right = temp -> left;
+            temp -> left = p->right->right;
+            p->right->right = temp;
+            p->right->updateHeight();
+            temp = p->right; // rotate left
+            p->right = temp -> left;
+            temp-> left = p;
+            p->updateHeight();
+            return temp;
+        }
+    }
+}
+
+// TreeNode
+ConcatStringTree::ParentsTree::TreeNode::TreeNode(int key,Node *data):key(key),height(1),left(NULL),right(NULL),data(data){}
+void ConcatStringTree::ParentsTree::TreeNode::updateHeight(){
+    int leftHeight = (left == NULL)?0:left->height;
+    int rightHeight = (right==NULL)?0:right->height;
+    height = (leftHeight>rightHeight)?leftHeight+1:rightHeight+1;
 }

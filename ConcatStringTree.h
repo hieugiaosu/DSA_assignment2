@@ -6,6 +6,7 @@
 class ConcatStringTree {
 public:
     class Node; //forward declaration
+    class ParentsTree; //forward declaration
 public:
     Node *root;
     int size;
@@ -14,6 +15,7 @@ private:
     void preoderTravelsal(Node*& p,string &ans) const;
     void toStringRec(Node *&p, string &ans) const;
     Node * subStringRecursive(Node * node,int from, int to) const;
+    Node * reverseRecursive(Node *node) const;
 public:
     ConcatStringTree(Node *root,int size);
     ConcatStringTree(const char * s);
@@ -30,11 +32,44 @@ public:
     int getParTreeSize(const string & query) const;
     string getParTreeStringPreOrder(const string & query) const;
 public:
+    class ParentsTree{
+        public:
+        class TreeNode;
+        public:
+        static const int maxNode = 10000000;
+        TreeNode *root;
+        int maxkey;
+        int treeSize;
+        private:
+        TreeNode* addNodeRec(TreeNode *p, Node *parent, int key);
+        TreeNode* ensureBalance(TreeNode *p);
+        void preOrderTravelsal(TreeNode *&p, string&ans) const;
+        public:
+        ParentsTree();
+        int size() const;
+        string toStringPreOrder() const;
+        void addNode(Node *parrent);
+        void deleteNode(Node *parrent, int key);
+        void deleteTree();
+        ~ParentsTree();
+        public:
+        class TreeNode{
+            public:
+            int key;
+            int height;
+            Node * data;
+            TreeNode *left;
+            TreeNode *right;
+            TreeNode(int key, Node* data);
+            void updateHeight();
+        };
+    };
     class Node{
         public:
         int leftLength;
         int length;
         char *data;
+        ParentsTree parents;
         Node *left;
         Node *right;
         Node();

@@ -16,6 +16,8 @@ private:
     void toStringRec(Node *&p, string &ans) const;
     Node * subStringRecursive(Node * node,int from, int to) const;
     Node * reverseRecursive(Node *node) const;
+    void updateParent(Node *&p, Node *node);
+    void deleteParent(Node *p, Node *node);
 public:
     ConcatStringTree(Node *root,int size);
     ConcatStringTree(const char * s);
@@ -27,7 +29,7 @@ public:
     ConcatStringTree concat(const ConcatStringTree & otherS) const;
     ConcatStringTree subString(int from, int to) const;
     ConcatStringTree reverse() const;
-    // ~ConcatStringTree();
+    ~ConcatStringTree();
 
     int getParTreeSize(const string & query) const;
     string getParTreeStringPreOrder(const string & query) const;
@@ -35,22 +37,27 @@ public:
     class ParentsTree{
         public:
         class TreeNode;
+
         public:
         static const int maxNode = 10000000;
         TreeNode *root;
         int maxkey;
         int treeSize;
+
         private:
         TreeNode* addNodeRec(TreeNode *p, Node *parent, int key);
         TreeNode* ensureBalance(TreeNode *p);
         void preOrderTravelsal(TreeNode *&p, string&ans) const;
+        int find(Node* parrent,TreeNode *node) const;
+        TreeNode* deleteRec(TreeNode*p,int key);
+
         public:
         ParentsTree();
         int size() const;
         string toStringPreOrder() const;
         void addNode(Node *parrent);
-        void deleteNode(Node *parrent, int key);
-        void deleteTree();
+        void deleteNode(Node *parrent);
+        void deleteTree(TreeNode *&p);
         ~ParentsTree();
         public:
         class TreeNode{
@@ -72,6 +79,7 @@ public:
         ParentsTree parents;
         Node *left;
         Node *right;
+        bool deleteStatus = false;
         Node();
         Node(const char *s);
         string info() const;

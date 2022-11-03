@@ -1,8 +1,8 @@
 #include "ConcatStringTree.h"
 // class Node
-ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL),parents(){}
+ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL),deleteStatus(false),parents(){}
 
-ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),right(NULL),parents(){
+ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),right(NULL),deleteStatus(false),parents(){
     for (int i=0;s[i];i++) length++;
     this -> data = new char[length+1];
     for (int i=0;i<=length;i++) this->data[i]=s[i];
@@ -11,16 +11,25 @@ string ConcatStringTree::Node::info() const{
     stringstream ss;
     ss<<"(LL="<<this->leftLength<<",L="<<this->length;
     if (this->data == NULL) ss<<",<NULL>)";
-        else ss<<','<<this->data<<')';
-    string ans;
-    ss>>ans;
+        else ss<<",\""<<this->data<<"\")";
+    string ans = ss.str();
     return ans;
 }
 ConcatStringTree::Node::~Node(){
     if (this->data != NULL) delete[] this->data;
 }
 // class ConcatStringTree
-ConcatStringTree::ConcatStringTree(Node *root,int size):root(root),size(size){}
+ConcatStringTree::ConcatStringTree(Node *root,int size):root(root),size(size){
+    Node *p = root;
+    updateParent(p->left,root);
+    updateParent(p->right,root);
+}
+void ConcatStringTree::updateParent(Node *&p,Node * node){
+    if (p==NULL) return;
+    p->parents.addNode(node);
+    updateParent(p->left,root);
+    updateParent(p->right,root);
+}
 ConcatStringTree::ConcatStringTree(const char *s){
     this->root = new Node(s);
     this->size = this->root->length;
@@ -85,8 +94,9 @@ void ConcatStringTree::preoderTravelsal(Node*&p,string &ans) const{
 
 string ConcatStringTree::toString() const{
     Node *p = root;
-    string ans ="";
+    string ans ="ConcatStringTree[\"";
     toStringRec(p,ans);
+    ans+="\"]";
     return ans;
 }
 
@@ -112,6 +122,7 @@ ConcatStringTree ConcatStringTree::subString(int from, int to) const{
     if (from >= to) throw  logic_error("Invalid range!");
     Node * p = root;
     Node * rootNode = subStringRecursive(p,from,to);
+    rootNode->deleteStatus = false;
     return ConcatStringTree(rootNode,to - from);
 }
 ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
@@ -124,10 +135,12 @@ ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int fro
             temp->data[i-from] = node ->data[i];
         }
         temp->data[to - from] = '\0';
+        temp->deleteStatus = true;
         return temp;
     } 
     Node * temp = new Node;
     temp->length = to - from;
+    temp->deleteStatus = true;
     if (node->leftLength < from) {
         temp -> right = subStringRecursive(node -> right,from - node->leftLength,to - node->leftLength);
     } else {
@@ -146,6 +159,7 @@ ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int fro
 ConcatStringTree ConcatStringTree::reverse() const{
     Node *p = root;
     Node *rootNode = reverseRecursive(p);
+    rootNode->deleteStatus = false;
     return ConcatStringTree(rootNode,this->size);
 }
 
@@ -160,6 +174,7 @@ ConcatStringTree::Node* ConcatStringTree::reverseRecursive(Node * node) const{
             temp->data[len-1-i] = node -> data[i];
         }
         temp->data[len] = '\0';
+        temp->deleteStatus = true;
         return temp;
     }
     temp ->length = len;
@@ -167,6 +182,7 @@ ConcatStringTree::Node* ConcatStringTree::reverseRecursive(Node * node) const{
         else temp->leftLength = node ->right ->length;
     temp -> left = reverseRecursive(node -> right);
     temp -> right = reverseRecursive(node->left);
+    temp ->deleteStatus =true;
     return temp;
 }
 
@@ -196,6 +212,24 @@ string ConcatStringTree::getParTreeStringPreOrder(const string & query) const{
         if (p==NULL) throw runtime_error("Invalid query: reaching NULL");
     }
     return (p->parents).toStringPreOrder();
+}
+
+ConcatStringTree::~ConcatStringTree(){
+    Node *temp = this->root;
+    this->size = 0;
+    this->root = NULL;
+    temp->deleteStatus = true;
+    deleteParent(temp->left,temp);
+    deleteParent(temp->right,temp);
+    if ((temp->parents).size()==0) delete temp;
+}
+
+void ConcatStringTree::deleteParent(Node *p, Node *node){
+    if (p==NULL) return;
+    deleteParent(p->left,node);
+    deleteParent(p->right,node);
+    (p->parents).deleteNode(node);
+    if (p->deleteStatus && (p->parents).size()==0) delete p;
 }
 
 // ParentsTree
@@ -228,6 +262,7 @@ string ConcatStringTree::ParentsTree::toStringPreOrder() const{
     preOrderTravelsal(p->left,ans);
     preOrderTravelsal(p->right,ans);
     ans+="]";
+    return ans;
 }
 void ConcatStringTree::ParentsTree::preOrderTravelsal(TreeNode *&p, string&ans) const{
     if (p==NULL) return;
@@ -307,6 +342,62 @@ ConcatStringTree::ParentsTree::TreeNode * ConcatStringTree::ParentsTree::ensureB
     }
 }
 
+void ConcatStringTree::ParentsTree::deleteNode(Node* parrent){
+    TreeNode *p = root;
+    int key = find(parrent,root);
+    if (key == 0) return;
+        else {
+            this->treeSize --;
+            root = deleteRec(root,key);
+        }
+}
+
+int ConcatStringTree::ParentsTree::find(Node* parrent,TreeNode *node) const{
+    if (node == NULL) return 0;
+    if (node->data == parrent) return node->key;
+    int leftkey = find(parrent,node->left);
+    return (leftkey==0)?find(parrent,node->right):leftkey;
+}
+
+ConcatStringTree::ParentsTree::TreeNode* ConcatStringTree::ParentsTree::deleteRec(TreeNode*p,int key){
+    if (p==NULL) return NULL;
+    if (p->key == key){
+        if (p->left==NULL){
+            TreeNode* temp = p;
+            p = p->right;
+            delete temp;
+        } else if (p->right==NULL){
+            TreeNode* temp = p;
+            p = p->left;
+            delete temp;
+        } else {
+            TreeNode* temp = p->left;
+            while (temp->right) temp = temp->right;
+            p->data = temp->data;
+            p->key = temp->key;
+            p->left = deleteRec(p->left,temp->key);
+        }
+    } else {
+        if (key<p->key) p->left = deleteRec(p->left,key);
+            else p->right = deleteRec(p->right,key);
+    }
+    if (p!=NULL) p->updateHeight();
+    return ensureBalance(p);
+}
+void ConcatStringTree::ParentsTree::deleteTree(TreeNode *&p){
+    if (p== NULL) return;
+    deleteTree(p->left);
+    deleteTree(p->right);
+    delete p;
+}
+
+ConcatStringTree::ParentsTree::~ParentsTree(){
+    TreeNode *temp = root;
+    this->root = NULL;
+    this->maxkey =0;
+    this->treeSize=0;
+    deleteTree(temp);
+}
 // TreeNode
 ConcatStringTree::ParentsTree::TreeNode::TreeNode(int key,Node *data):key(key),height(1),left(NULL),right(NULL),data(data){}
 void ConcatStringTree::ParentsTree::TreeNode::updateHeight(){

@@ -16,8 +16,8 @@ private:
     void toStringRec(Node *&p, string &ans) const;
     Node * subStringRecursive(Node * node,int from, int to) const;
     Node * reverseRecursive(Node *node) const;
-    void updateParent(Node *&p, Node *node);
-    void deleteParent(Node *p, Node *node);
+    void updateParent(Node *&p, Node *&node);
+    void deleteParent(Node *p, Node *&node);
 public:
     ConcatStringTree(Node *root,int size);
     ConcatStringTree(const char * s);

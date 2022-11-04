@@ -1,11 +1,14 @@
 #include "ConcatStringTree.h"
 // class Node
-ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL),deleteStatus(false),parents(){}
+ConcatStringTree::Node::Node():length(0),leftLength(0),left(NULL),right(NULL),data(NULL),deleteStatus(false),parents(){
+    parents.addNode(this);
+}
 
 ConcatStringTree::Node::Node(const char *s):length(0),leftLength(0),left(NULL),right(NULL),deleteStatus(false),parents(){
     for (int i=0;s[i];i++) length++;
     this -> data = new char[length+1];
     for (int i=0;i<=length;i++) this->data[i]=s[i];
+    parents.addNode(this);
 }
 string ConcatStringTree::Node::info() const{
     stringstream ss;
@@ -24,7 +27,7 @@ ConcatStringTree::ConcatStringTree(Node *root,int size):root(root),size(size){
     updateParent(p->left,root);
     updateParent(p->right,root);
 }
-void ConcatStringTree::updateParent(Node *&p,Node * node){
+void ConcatStringTree::updateParent(Node *&p,Node *& node){
     if (p==NULL) return;
     p->parents.addNode(node);
     updateParent(p->left,root);
@@ -219,16 +222,18 @@ ConcatStringTree::~ConcatStringTree(){
     this->size = 0;
     this->root = NULL;
     temp->deleteStatus = true;
+    (temp->parents).deleteNode(temp);
     deleteParent(temp->left,temp);
     deleteParent(temp->right,temp);
     if ((temp->parents).size()==0) delete temp;
 }
 
-void ConcatStringTree::deleteParent(Node *p, Node *node){
+void ConcatStringTree::deleteParent(Node *p, Node *&node){
     if (p==NULL) return;
     deleteParent(p->left,node);
     deleteParent(p->right,node);
     (p->parents).deleteNode(node);
+    if (p->deleteStatus) (p->parents).deleteNode(p);
     if (p->deleteStatus && (p->parents).size()==0) delete p;
 }
 

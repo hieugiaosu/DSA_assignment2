@@ -85,7 +85,7 @@ public:
 };
 
 class ReducedConcatStringTree; // forward declaration
-
+class LitStringHash;
 class HashConfig {
 private:
     int p;
@@ -95,12 +95,13 @@ private:
     int initSize;
 
     friend class ReducedConcatStringTree;
+    friend class LitStringHash;
 };
-
-class ReducedConcatStringTree : public ConcatStringTree {
-
-public:
-    class LitStringHash {
+class LitStringHash {
+    public:
+        class litString;
+        friend class ReducedConcatStringTree;
+        enum Status {EMPTY,NON_EMPTY,DELETED};
     public:
         int p;
         double c1,c2;
@@ -109,23 +110,32 @@ public:
         int initSize;
         int count;
         int last;
-        Node ** hashTable;
-    public:
+        litString ** hashTable;
         LitStringHash(const HashConfig & hashConfig);
-        int getLastInsertedIndex() const;
-        string toString() const;
-    private:
-        void rehashing();
-        int hashFunction(const char *key);
-        int findFunction(int h, int i);
-    public:
-        Node*& operator[](const char *key);
-        Node*& at(const char *key);
-        void push(Node * node);
-        void pop(Node * node);
         ~LitStringHash();
+    private:
+        int hashFunction(const char *s);
+        int findFunction(int h, int i);
+        void rehashing();
+    public:
+        string toString() const;
+        int getLastInsertedIndex() const;
+        litString*& push(const char *s);
+        int find(const char *s);
+        litString*& pop(const char *s);
+        // litString*& operator[](const char *s);
+    public:
+    class litString{
+        public:
+        ReducedConcatStringTree::Node* node;
+        Status status;
+        int count;
+        litString();
+        string info() const;
+        ~litString();
     };
-
+};
+class ReducedConcatStringTree : public ConcatStringTree {
 public:
     ReducedConcatStringTree(const char * s, LitStringHash * litStringHash);
     LitStringHash * litStringHash;

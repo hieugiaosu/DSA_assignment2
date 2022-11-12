@@ -219,11 +219,13 @@ string ConcatStringTree::getParTreeStringPreOrder(const string & query) const{
 }
 
 ConcatStringTree::~ConcatStringTree(){
-    Node *temp = this->root;
-    this->size = 0;
-    this->root = NULL;
-    (temp->parents).deleteNode(temp);
-    deleteTree(temp);
+    if (this->root != NULL){
+        Node *temp = this->root;
+        this->size = 0;
+        this->root = NULL;
+        (temp->parents).deleteNode(temp);
+        deleteTree(temp);
+    }
 }
 
 void ConcatStringTree::deleteTree(Node *& node){
@@ -342,6 +344,7 @@ ConcatStringTree::ParentsTree::TreeNode * ConcatStringTree::ParentsTree::ensureB
             return temp;
         }
     }
+    return NULL;
 }
 
 void ConcatStringTree::ParentsTree::deleteNode(Node* parent){
@@ -524,4 +527,182 @@ LitStringHash::litString*& LitStringHash::push(const char *s){
     hashTable[index]->status=NON_EMPTY;
     this->last = index;
     return hashTable[index];
+}
+void LitStringHash::pop(const char*s){
+    int slot = find(s);
+    if (slot==-1) return;
+    (hashTable[slot]->count)--;
+    if (hashTable[slot]->count!=0) return;
+    (hashTable[slot]->node->parents).deleteNode(hashTable[slot]->node);
+    delete hashTable[slot]->node;
+    hashTable[slot]->node=NULL;
+    hashTable[slot]->status=DELETED;
+    if (this->last == slot) this->last =-1;
+    this->count--;
+}
+void LitStringHash::rehashing(){
+    int oldSize = initSize;
+    initSize *=alpha;
+    litString ** temp = new litString*[initSize];
+    for (int i=0;i<initSize;i++) temp[i] = new litString;
+    int slot,index;
+    bool error;
+    for (int i=0;i<oldSize;i++){
+        if (hashTable[i]->status!=NON_EMPTY){
+            delete hashTable[i];
+        } else {
+            slot = hashFunction(hashTable[i]->node->data);
+            if (temp[slot]->status!=NON_EMPTY) {
+                temp[slot]->status=NON_EMPTY;
+                temp[slot]->node = hashTable[i]->node;
+                hashTable[i]->node=NULL;
+                temp[slot]->count = hashTable[i]->count;
+                delete hashTable[i];
+            } else {
+                error = true;
+                for (int i=1;i<initSize;i++){
+                    index = findFunction(slot,i);
+                    if (temp[index]->status!=NON_EMPTY) {
+                        temp[index]->status=NON_EMPTY;
+                        temp[index]->node = hashTable[i]->node;
+                        hashTable[i]->node=NULL;
+                        temp[index]->count = hashTable[i]->count;
+                        delete hashTable[i];
+                        error = false;
+                        break;
+                    }
+                }
+                if (error) throw runtime_error("No possible slot");
+            }
+        }
+    }
+    delete[] hashTable;
+    hashTable = temp;
+}
+
+LitStringHash::~LitStringHash(){
+    for (int i=0;i<initSize;i++) delete hashTable[i];
+    delete[] hashTable;
+    initSize=0;
+    count=0;
+    hashTable = NULL;
+}
+
+// ReducedConcatStringTree
+ReducedConcatStringTree::ReducedConcatStringTree(const char * s, LitStringHash * litStringHash):ConcatStringTree(NULL,0){
+    this->litStringHash = litStringHash;
+    LitStringHash::litString * temp = this->litStringHash->push(s);
+    this->root = temp->node;
+    this->size = this->root->length;
+}
+
+ReducedConcatStringTree::ReducedConcatStringTree(Node * root,int size,LitStringHash * litStringHash = NULL):ConcatStringTree(root,size){
+    this->litStringHash = litStringHash;
+}
+
+ReducedConcatStringTree ReducedConcatStringTree::concat(const ReducedConcatStringTree  & otherS) const{
+    Node * temp = new Node;
+    temp->left = this->root;
+    temp->right = otherS.root;
+    temp->leftLength = this->size;
+    temp->length = this->size + otherS.size;
+    (this->root->parents).addNode(temp);
+    (otherS.root->parents).addNode(temp);
+    return ReducedConcatStringTree(temp,temp->length,this->litStringHash);
+}
+
+ReducedConcatStringTree ReducedConcatStringTree::subString(int from, int to) const{
+    if (from<0 || from >= size || to <=0 || to>size) throw out_of_range("Index of string is invalid!");
+    if (from >= to) throw  logic_error("Invalid range!");
+    Node * p = root;
+    Node * rootNode = ReducedConcatStringTree::subStringRecursive(p,from,to);
+    (rootNode->parents).addNode(rootNode);
+    return ReducedConcatStringTree(rootNode,to-from,this->litStringHash);
+}
+
+ReducedConcatStringTree::Node* ReducedConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
+    if (node == NULL) return NULL;
+    if (node->data != NULL){
+        int stringLen = to - from;
+        char temp[stringLen];
+        for (int i=from;i < to;i++){
+            temp[i-from] = node ->data[i];
+        }
+        temp[to - from] = '\0';
+        LitStringHash::litString *tempLitString = this->litStringHash->push(temp);
+        (tempLitString->node->parents).deleteNode(tempLitString->node);
+        return tempLitString->node;
+    } 
+    Node * temp = new Node;
+    (temp->parents).deleteNode(temp);
+    temp->length = to - from;
+    if (node->leftLength < from) {
+        temp -> right = subStringRecursive(node -> right,from - node->leftLength,to - node->leftLength);
+        ((temp->right)->parents).addNode(temp);
+    } else {
+        if (node -> leftLength >= to){
+            temp->leftLength = to - from;
+            temp -> left = subStringRecursive(node -> left,from ,to);
+            ((temp->left)->parents).addNode(temp);
+        } else {
+            temp -> leftLength = node ->leftLength - from;
+            temp -> left = subStringRecursive(node->left,from,node ->leftLength);
+            temp -> right = subStringRecursive(node->right,0,to - node->leftLength);
+            ((temp->left)->parents).addNode(temp);
+            ((temp->right)->parents).addNode(temp);
+        }
+    }
+    return temp;
+}
+
+ReducedConcatStringTree ReducedConcatStringTree::reverse() const{
+    Node *p = root;
+    Node *rootNode = ReducedConcatStringTree::reverseRecursive(p);
+    (rootNode->parents).addNode(rootNode);
+    return ReducedConcatStringTree(rootNode,this->size,this->litStringHash);
+}
+
+ReducedConcatStringTree::Node* ReducedConcatStringTree::reverseRecursive(Node *node) const{
+    if (node == NULL) return NULL;
+    int len = node ->length;
+    if (node->data != NULL){
+        char temp[len+1];
+        for (int i=0;node->data[i];i++){
+            temp[len-1-i] = node -> data[i];
+        }
+        temp[len] = '\0';
+        LitStringHash::litString *tempLitString = this->litStringHash->push(temp);
+        (tempLitString->node->parents).deleteNode(tempLitString->node);
+        return tempLitString->node;
+    }
+    Node * temp = new Node;
+    (temp->parents).deleteNode(temp);
+    temp ->length = len;
+    if (node -> right == NULL) temp ->leftLength =0;
+        else temp->leftLength = node ->right ->length;
+    temp -> left = reverseRecursive(node -> right);
+    temp -> right = reverseRecursive(node->left);
+    if (temp->left) ((temp->left)->parents).addNode(temp);
+    if (temp->right) ((temp->right)->parents).addNode(temp);
+    return temp;
+}
+void ReducedConcatStringTree::deleteTree(Node *& node){
+    if (node == NULL) return;
+    if ((node->parents).size()!=0 && node->data == NULL) return;
+    if ((node->parents).size()>1 && node -> data != NULL) return;
+    if (node->left) (node->left)->parents.deleteNode(node);
+    if (node->right) (node->right)->parents.deleteNode(node);
+    deleteTree(node->left);
+    deleteTree(node->right);
+    if (node -> data != NULL) (this->litStringHash)->pop(node->data);
+        else delete node;
+}
+
+ReducedConcatStringTree::~ReducedConcatStringTree(){
+    Node *temp = this->root;
+    this->size = 0;
+    this->root = NULL;
+    if (temp->data ==NULL) (temp->parents).deleteNode(temp);
+    deleteTree(temp);
+    this->litStringHash = NULL;
 }

@@ -10,7 +10,7 @@ public:
 public:
     Node *root;
     int size;
-private:
+protected:
     int indexOf(char c, Node* p);
     void preoderTravelsal(Node*& p,string &ans) const;
     void toStringRec(Node *&p, string &ans) const;
@@ -43,7 +43,7 @@ public:
         static int maxkey;
         int treeSize;
 
-        private:
+        protected:
         TreeNode* addNodeRec(TreeNode *p, Node *parent);
         TreeNode* ensureBalance(TreeNode *p);
         void preOrderTravelsal(TreeNode *&p, string&ans) const;
@@ -122,7 +122,7 @@ class LitStringHash {
         int getLastInsertedIndex() const;
         litString*& push(const char *s);
         int find(const char *s);
-        litString*& pop(const char *s);
+        void pop(const char *s);
         // litString*& operator[](const char *s);
     public:
     class litString{
@@ -136,10 +136,19 @@ class LitStringHash {
     };
 };
 class ReducedConcatStringTree : public ConcatStringTree {
-public:
-    ReducedConcatStringTree(const char * s, LitStringHash * litStringHash);
-    LitStringHash * litStringHash;
-    ~ReducedConcatStringTree();
+    public:
+        LitStringHash * litStringHash;
+        ReducedConcatStringTree(const char * s, LitStringHash * litStringHash);
+        ReducedConcatStringTree(Node * root,int size,LitStringHash * litStringHash = NULL);
+        ~ReducedConcatStringTree();
+    protected:
+        Node * subStringRecursive(Node * node,int from, int to) const;
+        Node * reverseRecursive(Node *node) const;
+        void deleteTree(Node *&node);
+    public:
+        ReducedConcatStringTree concat(const ReducedConcatStringTree  & otherS) const;
+        ReducedConcatStringTree subString(int from, int to) const;
+        ReducedConcatStringTree reverse() const;
 };
 
 #endif // __CONCAT_STRING_TREE_H__

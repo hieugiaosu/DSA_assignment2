@@ -587,6 +587,7 @@ ReducedConcatStringTree::ReducedConcatStringTree(const char * s, LitStringHash *
     rootNode ->data = temp ->data;
     rootNode->length = temp->stringLength;
     this->root=rootNode;
+    this->size = temp->stringLength;
 }
 
 ReducedConcatStringTree::ReducedConcatStringTree(Node * root,int size,LitStringHash * litStringHash):ConcatStringTree(root,size){

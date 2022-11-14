@@ -42,6 +42,38 @@ void mytc(){
     cout<<kl.toStringPreOrder()<<endl;
     cout<<bcdefghi.toStringPreOrder()<<endl;
 }
+void mytc2(){
+    HashConfig config(13,2.4,3.3,0.75,1.75,4);
+    LitStringHash *hash = new LitStringHash(config);
+    ReducedConcatStringTree *s1 = new ReducedConcatStringTree("hello_",hash);
+    ReducedConcatStringTree *s2 = new ReducedConcatStringTree("there",hash);
+    ReducedConcatStringTree *s3 = new ReducedConcatStringTree(s1->concat(*s2));
+    ReducedConcatStringTree *s4 = new ReducedConcatStringTree(s3->subString(0,2));
+    ReducedConcatStringTree *s5 = new ReducedConcatStringTree("t_",hash);
+    ReducedConcatStringTree *s6 = new ReducedConcatStringTree(s4->concat(*s5));
+    ReducedConcatStringTree *s7 = new ReducedConcatStringTree(s6->concat(*s4));
+    ReducedConcatStringTree *s8 = new ReducedConcatStringTree("_lai_sang_thu",hash);
+    ReducedConcatStringTree *s9 = new ReducedConcatStringTree(s1->reverse());
+    ReducedConcatStringTree *s10= new ReducedConcatStringTree(s3->reverse());
+    ReducedConcatStringTree *s11 = new ReducedConcatStringTree(s7->concat(*s8));
+    cout<<hash->toString()<<endl;
+    delete s1;
+    cout<<s3->getParTreeStringPreOrder("L")<<endl;
+    delete s5;
+    cout<<s11->toString()<<endl;
+    delete s3;
+    cout<<hash->toString()<<endl;
+    delete s9;
+    cout<<s10->toStringPreOrder();
+    delete hash;
+    delete s2;
+    delete s4;
+    delete s6;
+    delete s7;
+    delete s8;
+    delete s11;
+    cout<<endl<<"end tc"<<endl;
+}
 int main() {
     mytc();
     cout<<"\n------------------------------------";

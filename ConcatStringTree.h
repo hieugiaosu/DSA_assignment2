@@ -96,6 +96,8 @@ private:
 
     friend class ReducedConcatStringTree;
     friend class LitStringHash;
+    public:
+    HashConfig(int p, double c1, double c2,double lambda, double alpha, int initSize);
 };
 class LitStringHash {
     public:
@@ -127,8 +129,9 @@ class LitStringHash {
     public:
     class litString{
         public:
-        ReducedConcatStringTree::Node* node;
+        char * data;
         Status status;
+        int stringLength;
         int count;
         litString();
         string info() const;
@@ -139,7 +142,7 @@ class ReducedConcatStringTree : public ConcatStringTree {
     public:
         LitStringHash * litStringHash;
         ReducedConcatStringTree(const char * s, LitStringHash * litStringHash);
-        ReducedConcatStringTree(Node * root,int size,LitStringHash * litStringHash = NULL);
+        ReducedConcatStringTree(Node * root,int size,LitStringHash * litStringHash);
         ~ReducedConcatStringTree();
     protected:
         Node * subStringRecursive(Node * node,int from, int to) const;

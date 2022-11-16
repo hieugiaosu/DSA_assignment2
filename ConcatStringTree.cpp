@@ -125,6 +125,7 @@ ConcatStringTree ConcatStringTree::subString(int from, int to) const{
     return ConcatStringTree(rootNode,to - from);
 }
 ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
+    if (from<0 || from >= node->length || to <=0 || to>node->length) return NULL;
     if (node == NULL) return NULL;
     if (node->data != NULL){
         Node * temp = new Node;
@@ -546,18 +547,20 @@ void LitStringHash::rehashing(){
             if (temp[slot]->status!=NON_EMPTY) {
                 temp[slot]->status=NON_EMPTY;
                 temp[slot]->data = hashTable[i]->data;
+                temp[slot]->stringLength = hashTable[i]->stringLength;
                 hashTable[i]->data=NULL;
                 temp[slot]->count = hashTable[i]->count;
                 delete hashTable[i];
             } else {
                 error = true;
-                for (int i=1;i<initSize;i++){
-                    index = findFunction(slot,i);
+                for (int j=1;j<initSize;j++){
+                    index = findFunction(slot,j);
                     if (temp[index]->status!=NON_EMPTY) {
                         temp[index]->status=NON_EMPTY;
                         temp[index]->data = hashTable[i]->data;
                         hashTable[i]->data=NULL;
                         temp[index]->count = hashTable[i]->count;
+                        temp[index]->stringLength = hashTable[i]->stringLength;
                         delete hashTable[i];
                         error = false;
                         break;
@@ -615,6 +618,7 @@ ReducedConcatStringTree ReducedConcatStringTree::subString(int from, int to) con
 }
 
 ReducedConcatStringTree::Node* ReducedConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
+    if (from<0 || from >= node->length || to <=0 || to>node->length) return NULL;
     if (node == NULL) return NULL;
     if (node->data != NULL){
         int stringLen = to - from;

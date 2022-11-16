@@ -125,7 +125,6 @@ ConcatStringTree ConcatStringTree::subString(int from, int to) const{
     return ConcatStringTree(rootNode,to - from);
 }
 ConcatStringTree::Node* ConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
-    if (from<0 || from >= node->length || to <=0 || to>node->length) return NULL;
     if (node == NULL) return NULL;
     if (node->data != NULL){
         Node * temp = new Node;
@@ -618,7 +617,6 @@ ReducedConcatStringTree ReducedConcatStringTree::subString(int from, int to) con
 }
 
 ReducedConcatStringTree::Node* ReducedConcatStringTree::subStringRecursive(Node * node,int from, int to) const{
-    if (from<0 || from >= node->length || to <=0 || to>node->length) return NULL;
     if (node == NULL) return NULL;
     if (node->data != NULL){
         int stringLen = to - from;

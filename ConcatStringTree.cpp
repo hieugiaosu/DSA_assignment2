@@ -231,11 +231,18 @@ ConcatStringTree::~ConcatStringTree(){
 void ConcatStringTree::deleteTree(Node *& node){
     if (node == NULL) return;
     if ((node->parents).size()!=0) return;
-    if (node->left) (node->left)->parents.deleteNode(node);
-    if (node->right) (node->right)->parents.deleteNode(node);
-    deleteTree(node->left);
-    deleteTree(node->right);
+    if (node->left){
+        (node->left)->parents.deleteNode(node);
+        deleteTree(node->left);
+    }
+    if (node->right){
+        (node->right)->parents.deleteNode(node);
+        deleteTree(node->right);
+    }
+    // if (node->left) deleteTree(node->left);
+    // if (node->right) deleteTree(node->right);
     delete node;
+    node = NULL;
 }
 // ParentsTree
 int ConcatStringTree::ParentsTree::maxkey = 0;
@@ -693,18 +700,19 @@ void ReducedConcatStringTree::deleteTree(Node *& node){
     if ((node->parents).size()!=0) return;
     if (node->left){
         (node->left)->parents.deleteNode(node);
+        deleteTree(node->left);
     }
     if (node->right) {
         (node->right)->parents.deleteNode(node);
+        deleteTree(node->right);
     }
-    deleteTree(node->left);
-    deleteTree(node->right);
     char * temp = node ->data;
     if (temp != NULL) {
         node->data = NULL;
         if (this->litStringHash->initSize != 0) this->litStringHash->pop(temp);
     }
     delete node;
+    node = NULL;
 }
 
 ReducedConcatStringTree::~ReducedConcatStringTree(){

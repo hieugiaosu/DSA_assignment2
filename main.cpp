@@ -1,5 +1,74 @@
 #include "ConcatStringTree.h"
+void bkel1(){
+    ConcatStringTree s1("acbbcab");
+    cout << s1.length() << endl;
+    cout << s1.get(1) << endl;
+    try {
+        cout << "char at index 10: " << s1.get(10) << endl;
+    }
+    catch (const out_of_range & ofr) {
+        cout << "Exception out_of_range: " << ofr.what() << endl;
+    }
+    cout << s1.indexOf('b') << endl;
+}
+void bkel2(){
+    ConcatStringTree s1("Hello");
+    ConcatStringTree s2(",_t");
+    ConcatStringTree s3 = s1.concat(s2);
+    cout << s3.toStringPreOrder() << endl;
+    cout << s3.toString() << endl;
+    cout << s3.subString(5, 6).toString() << endl;
+    cout << s3.reverse().toString() << endl;
+}
+void bkel3(){
+    ConcatStringTree * s1 = new ConcatStringTree("a");
+    ConcatStringTree * s2 = new ConcatStringTree("b");
+    ConcatStringTree * s3 = new ConcatStringTree(s1->concat(*s2));
 
+    cout << s3->getParTreeSize("l") << endl;
+    cout << s3->getParTreeStringPreOrder("l") << endl;
+
+    delete s1;
+    delete s2;
+    delete s3;
+}
+void bkel4(){
+    HashConfig hashConfig(
+        2,
+        0.5,
+        0.5,
+        0.75,
+        2,
+        4
+    );
+    LitStringHash * litStringHash = new LitStringHash(hashConfig);
+    ReducedConcatStringTree * s1 = new ReducedConcatStringTree("a", litStringHash);
+    ReducedConcatStringTree * s2 = new ReducedConcatStringTree("bb", litStringHash);
+
+    cout << s1->toString() << endl;
+    cout << s2->toString() << endl;
+    ReducedConcatStringTree * s3 = new ReducedConcatStringTree("bb", litStringHash);
+
+    cout << litStringHash->getLastInsertedIndex() << endl;
+    cout << litStringHash->toString() << endl;
+    ReducedConcatStringTree *s4 = new ReducedConcatStringTree("vcl",litStringHash);
+    ReducedConcatStringTree *s5 = new ReducedConcatStringTree("ac",litStringHash);
+    cout << litStringHash->toString() << endl;
+    delete litStringHash;
+    delete s5;
+    delete s4;
+    delete s3;
+    delete s1;
+    delete s2;
+}
+void bkel5(){
+     ConcatStringTree s1("Hello");
+    cout << "Please focus to id: " << s1.getParTreeStringPreOrder("") << endl;
+    ConcatStringTree s2("an-nyeong-ha-se-yo");
+    cout << "Please focus to id: " << s2.getParTreeStringPreOrder("") << endl;
+    ConcatStringTree s3("nee how");
+    cout << "Please focus to id: " << s3.getParTreeStringPreOrder("") << endl;
+}
 void mytc(){
     ConcatStringTree s1("this_is_");
     ConcatStringTree s2("my_basic_test");
@@ -31,7 +100,9 @@ void mytc(){
     ConcatStringTree ab = abcdefghijkl.subString(0,2);
     ConcatStringTree kl = abcdefghijkl.subString(10,12);
     ConcatStringTree bcdefghi = abcdefghijkl.subString(1,9);
+    ConcatStringTree daivcl = abcdefghijkl.reverse();
     cout<<"begin basic testcase 2"<<endl;
+    cout<<daivcl.toStringPreOrder()<<endl;
     cout<<abcdefghijkl.toString()<<endl;
     cout<<ab.toString()<<endl;
     cout<<kl.toString()<<endl;
@@ -57,26 +128,133 @@ void mytc2(){
     ReducedConcatStringTree *s10= new ReducedConcatStringTree(s3->reverse());
     ReducedConcatStringTree *s11 = new ReducedConcatStringTree(s7->concat(*s8));
     cout<<hash->toString()<<endl;
+    cout<<s1->toStringPreOrder()<<endl;
+    cout<<s2->toStringPreOrder()<<endl;
+    cout<<s3->toStringPreOrder()<<endl;
+    cout<<s4->toStringPreOrder()<<endl;
+    cout<<s5->toStringPreOrder()<<endl;
+    cout<<s6->toStringPreOrder()<<endl;
+    cout<<s7->toStringPreOrder()<<endl;
+    cout<<s8->toStringPreOrder()<<endl;
+    cout<<s9->toStringPreOrder()<<endl;
+    cout<<s10->toStringPreOrder()<<endl;
+    cout<<s11->toStringPreOrder()<<endl;
     delete s1;
-    cout<<s3->getParTreeStringPreOrder("L")<<endl;
+    cout<<s3->getParTreeStringPreOrder("l")<<endl;
     delete s5;
     cout<<s11->toString()<<endl;
+    cout<<s11->toStringPreOrder()<<endl;
     delete s3;
     cout<<hash->toString()<<endl;
+    cout<<"pass (1) \n";
     delete s9;
-    cout<<s10->toStringPreOrder();
-    delete hash;
+        cout<<"pass (2) \n";
+    cout<<s10->toStringPreOrder()<<endl;
+    // delete hash;
+cout<<"pass (3) \n";
     delete s2;
+    cout<<"pass (4) \n";
     delete s4;
+    cout<<"pass (5) \n";
     delete s6;
+    cout<<"pass (6) \n";
     delete s7;
+    cout<<"pass (7) \n";
     delete s8;
+    cout<<"pass (8) \n";
+    cout<<s11->toString()<<endl;
     delete s11;
+    cout<<"pass (9) \n";
+    delete s10;
+    cout<<endl<<"end tc"<<endl;
+    delete hash;
+}
+void tcParentsTree() {
+    ConcatStringTree sA("ABC"), sB("DEF"), sC("GHI");
+    ConcatStringTree s1 = sA.concat(sB);
+    ConcatStringTree s2 = sB.concat(sC);
+    ConcatStringTree s3 = s1.concat(s2);
+    cout << sA.getParTreeStringPreOrder("") << '\n'; // ParentsTree[(id=1);(id=4)]
+    cout << sB.getParTreeStringPreOrder("") << '\n'; // ParentsTree[(id=4);(id=2);(id=5)]
+    cout << sC.getParTreeStringPreOrder("") << '\n'; // ParentsTree[(id=3);(id=5)]
+    cout << s1.getParTreeStringPreOrder("") << '\n'; // ParentsTree[(id=4);(id=6)]
+    cout << s2.getParTreeStringPreOrder("") << '\n'; // ParentsTree[(id=5);(id=6)]
+    cout << s3.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=6)]
+
+    ConcatStringTree s4 = s1.concat(s3); // ABCDEFABCDEFDEFGHI
+    ConcatStringTree s5 = s4.concat(s2); // ABCDEFABCDEFDEFGHIDEFGHI
+    ConcatStringTree s6 = s3.concat(s5); // ABCDEFDEFGHIABCDEFABCDEFDEFGHIDEFGHI
+    ConcatStringTree s7 = s1.concat(s2);
+    cout << s6.toString() << " " << s6.length() << endl; // ConcatStringTree["ABCDEFDEFGHIABCDEFABCDEFDEFGHIDEFGHI"] 36
+    cout << s1.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=6);(id=4);(id=7);(id=10)]
+    cout << s2.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=6);(id=5);(id=8);(id=10)]
+    cout << s3.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=7);(id=6);(id=9)]
+    cout << s4.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=7);(id=8)]
+    cout << s5.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=8);(id=9)]
+    cout << s6.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=9)]
+    cout << s7.getParTreeStringPreOrder("") << endl; // ParentsTree[(id=10)]
+
+    ConcatStringTree s8 = s3.subString(1, s3.length()-1);
+    ConcatStringTree s9 = s3.reverse();
+    cout << s8.toString() << " " << s8.length() << endl; // ConcatStringTree["BCDEFDEFGH"] 10
+    cout << s9.toString() << " " << s9.length() << endl; // ConcatStringTree["IHGFEDFEDCBA"] 12
+}
+void mytc3(){
+    ConcatStringTree *s1 = new ConcatStringTree("hello_");
+    ConcatStringTree *s2 = new ConcatStringTree("there");
+    ConcatStringTree *s3 = new ConcatStringTree(s1->concat(*s2));
+    ConcatStringTree *s4 = new ConcatStringTree(s3->subString(0,2));
+    ConcatStringTree *s5 = new ConcatStringTree("t_");
+    ConcatStringTree *s6 = new ConcatStringTree(s4->concat(*s5));
+    ConcatStringTree *s7 = new ConcatStringTree(s6->concat(*s4));
+    ConcatStringTree *s8 = new ConcatStringTree("_lai_sang_thu");
+    ConcatStringTree *s9 = new ConcatStringTree(s1->reverse());
+    ConcatStringTree *s10= new ConcatStringTree(s3->reverse());
+    ConcatStringTree *s11 = new ConcatStringTree(s7->concat(*s8));cout<<s1->toStringPreOrder()<<endl;
+    cout<<s2->toStringPreOrder()<<endl;
+    cout<<s3->toStringPreOrder()<<endl;
+    cout<<s4->toStringPreOrder()<<endl;
+    cout<<s5->toStringPreOrder()<<endl;
+    cout<<s6->toStringPreOrder()<<endl;
+    cout<<s7->toStringPreOrder()<<endl;
+    cout<<s8->toStringPreOrder()<<endl;
+    cout<<s9->toStringPreOrder()<<endl;
+    cout<<s10->toStringPreOrder()<<endl;
+    cout<<s11->toStringPreOrder()<<endl;
+    delete s1;
+    cout<<s3->getParTreeStringPreOrder("l")<<endl;
+    delete s5;
+    cout<<s11->toString()<<endl;
+    cout<<s11->toStringPreOrder()<<endl;
+    delete s3;
+    cout<<"pass (1) \n";
+    delete s9;
+        cout<<"pass (2) \n";
+    cout<<s10->toStringPreOrder()<<endl;
+    // delete hash;
+    cout<<"pass (3) \n";
+    delete s2;
+    cout<<"pass (4) \n";
+    delete s4;
+    cout<<"pass (5) \n";
+    delete s6;
+    cout<<"pass (6) \n";
+    delete s7;
+    cout<<"pass (7) \n";
+    delete s8;
+    cout<<"pass (8) \n";
+    cout<<s11->toString()<<endl;
+    delete s11;
+    cout<<"pass (9) \n";
+    delete s10;
     cout<<endl<<"end tc"<<endl;
 }
+void hashtest(){
+    HashConfig config(31,3*1e9,3.141592654,0.6,2.1,11);
+}
 int main() {
-    mytc();
-    cout<<"\n------------------------------------";
+    mytc2();
+    cout<<"\n------------------------------------"<<endl;
 
     return 0;
 }

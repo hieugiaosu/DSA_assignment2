@@ -457,7 +457,7 @@ int LitStringHash::hashFunction(const char *s){
     return ans%initSize;
 }
 int LitStringHash::findFunction(int h, int i){
-    int ans;
+    long long ans;
     double help = c1 + c2*i*1.0;
     double temp = help - int(help);
     if (temp*i > -1 && temp*i<1){
@@ -496,9 +496,6 @@ LitStringHash::litString*& LitStringHash::push(const char *s){
     int len =0;
     for (int i=0;s[i];i++) len++;
     (this->count)++;
-    if (this->count*1.0 > lambda*initSize*1.0){
-        rehashing();
-    }
     slot = hashFunction(s);
     if (hashTable[slot]->status != NON_EMPTY){
         hashTable[slot]->data = new char[len+1];
@@ -507,7 +504,10 @@ LitStringHash::litString*& LitStringHash::push(const char *s){
         hashTable[slot]->status=NON_EMPTY;
         hashTable[slot]->stringLength=len;
         this->last = slot;
-        return hashTable[slot];
+        if (this->count*1.0 > lambda*initSize*1.0){
+            rehashing();
+        }
+        return hashTable[this->last];
     }
     bool error = true;
     int index;
@@ -525,7 +525,10 @@ LitStringHash::litString*& LitStringHash::push(const char *s){
     hashTable[index]->status=NON_EMPTY;
     hashTable[index]->stringLength = len;
     this->last = index;
-    return hashTable[index];
+    if (this->count*1.0 > lambda*initSize*1.0){
+        rehashing();
+    }
+    return hashTable[this->last];
 }
 void LitStringHash::pop(const char*s){
     int slot = find(s);
@@ -535,7 +538,7 @@ void LitStringHash::pop(const char*s){
     delete hashTable[slot]->data;
     hashTable[slot]->data=NULL;
     hashTable[slot]->status=DELETED;
-    if (this->last == slot) this->last =-1;
+    // if (this->last == slot) this->last =-1;
     this->count--;
 }
 void LitStringHash::rehashing(){
@@ -543,30 +546,38 @@ void LitStringHash::rehashing(){
     initSize *=alpha;
     litString ** temp = new litString*[initSize];
     for (int i=0;i<initSize;i++) temp[i] = new litString;
-    int slot,index;
-    bool error;
+    int slot, index;
+    bool changeLast = false;
     for (int i=0;i<oldSize;i++){
         if (hashTable[i]->status!=NON_EMPTY){
             delete hashTable[i];
         } else {
             slot = hashFunction(hashTable[i]->data);
-            if (temp[slot]->status!=NON_EMPTY) {
-                temp[slot]->status=NON_EMPTY;
+            if (temp[slot]->status == EMPTY){
+                if (this->last == i && !changeLast){
+                    this->last = slot;
+                    changeLast = true;
+                }
+                temp[slot]->status = NON_EMPTY;
                 temp[slot]->data = hashTable[i]->data;
                 temp[slot]->stringLength = hashTable[i]->stringLength;
-                hashTable[i]->data=NULL;
                 temp[slot]->count = hashTable[i]->count;
+                hashTable[i]->data = NULL;
                 delete hashTable[i];
             } else {
-                error = true;
-                for (int j=1;j<initSize;j++){
+                bool error = true;
+                for (int j=1;j<initSize;j++) {
                     index = findFunction(slot,j);
-                    if (temp[index]->status!=NON_EMPTY) {
-                        temp[index]->status=NON_EMPTY;
+                    if (temp[index]->status == EMPTY){
+                        if (this->last == i && !changeLast){
+                            this->last = index;
+                            changeLast = true;
+                        }
+                        temp[index]->status = NON_EMPTY;
                         temp[index]->data = hashTable[i]->data;
-                        hashTable[i]->data=NULL;
-                        temp[index]->count = hashTable[i]->count;
                         temp[index]->stringLength = hashTable[i]->stringLength;
+                        temp[index]->count = hashTable[i]->count;
+                        hashTable[i]->data = NULL;
                         delete hashTable[i];
                         error = false;
                         break;

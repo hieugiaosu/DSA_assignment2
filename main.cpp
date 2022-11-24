@@ -249,11 +249,61 @@ void mytc3(){
     delete s10;
     cout<<endl<<"end tc"<<endl;
 }
-void hashtest(){
-    HashConfig config(31,3*1e9,3.141592654,0.6,2.1,11);
+void Hieutc4() {
+    HashConfig config(37, 3*1e6, 3.141592654, 0.6, 2.1, 11);
+
+    LitStringHash * hash = new LitStringHash(config);
+    ReducedConcatStringTree * s1 = new ReducedConcatStringTree("Hello_I_am_HCMUT_students._",hash);
+    cout<<hash->toString()<<endl << endl;
+    ReducedConcatStringTree * s2 = new ReducedConcatStringTree("I_Really_Love_my_Schools",hash);
+    cout<<hash->toString()<<endl << endl;
+    ReducedConcatStringTree * s3 = new ReducedConcatStringTree("I_Found_",hash);
+    cout<<hash->toString()<<endl << endl;
+    ReducedConcatStringTree * s4 = new ReducedConcatStringTree("DSA_is_easy",hash);
+    cout<<hash->toString()<<endl << endl;
+    ReducedConcatStringTree * s5 = new ReducedConcatStringTree("_",hash);
+    cout<<hash->toString()<<endl << endl;
+    ReducedConcatStringTree * s6 = new ReducedConcatStringTree("ALL_Thing",hash);
+    cout<<hash->toString()<<endl << endl;
+    cout<<"before rehash"<<endl;
+    ReducedConcatStringTree * s7 = new ReducedConcatStringTree("I_said",hash);
+    ReducedConcatStringTree * s8 = new ReducedConcatStringTree("is_a_joke",hash);
+    
+    ReducedConcatStringTree * s9 = new ReducedConcatStringTree(s1->concat(*s2));
+    ReducedConcatStringTree * s10 = new ReducedConcatStringTree(s3->concat(*s4));
+    ReducedConcatStringTree * s11 = new ReducedConcatStringTree(s9->concat(*s10));
+    cout<<hash->toString()<<endl;
+    delete s1;
+    cout<<"pass (1)"<<endl;
+    delete s2;
+    cout<<"pass (2)"<<endl;
+    delete s3;
+    cout<<"pass (3)"<<endl;
+    delete s4;
+    cout<<"pass (4)"<<endl;
+    delete s5;
+    cout<<"pass (5)"<<endl;
+    delete s6;
+    cout<<"pass (6)"<<endl;
+    delete s7;
+    cout<<"pass (7)"<<endl;
+    delete s8;
+    cout<<"pass (8)"<<endl;
+    delete s9;
+    cout<<"pass (9)"<<endl;
+    delete s10;
+    cout<<"pass (10)"<<endl;
+    delete s11;
+    cout<<"pass (11)"<<endl;
+    delete hash;
+    cout<<"finish"<<endl;
 }
 int main() {
-    mytc2();
+    try{
+    Hieutc4();
+    } catch(runtime_error &of) {
+        cout<< of.what() <<endl;
+    }
     cout<<"\n------------------------------------"<<endl;
 
     return 0;
